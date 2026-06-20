@@ -1,0 +1,30 @@
+services:
+  typesense:
+    image: typesense/typesense:31.0.rc9
+    container_name: typesense
+    restart: on-failure
+    ports:
+      - '8108:8108'
+    volumes:
+      - typesense-data:/data
+
+    command: '--data-dir /data --enable-cors'
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY_DEV}
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    depends_on:
+      - typesense
+    ports:
+      - '4040:4040'
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+
+    command: 'http typesense:8108'
+
+volumes:
+  typesense-data:
+    external: true

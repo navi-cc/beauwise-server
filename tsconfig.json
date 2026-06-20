@@ -1,0 +1,51 @@
+{
+	"compilerOptions": {
+		"rootDir": "./src",
+
+		"module": "nodenext",
+		"target": "esnext",
+		"lib": ["esnext"],
+		"types": ["node"],
+		"outDir": "./dist",
+		"sourceMap": true,
+
+		"paths": {
+			"@middleware/*": ["./src/admin/middlewares/*"],
+			"@domain/*": ["./src/admin/domain/*"],
+			"@controller/*": ["./src/admin/controllers/*"],
+			"@services/*": ["./src/admin/services/*"],
+			"@repo/*": ["./src/admin/repos/*"],
+			"@utils/*": ["./src/admin/utils/*"],
+			"@zod/*": ["./src/admin/zod/*"],
+			"@routes/*": ["./src/admin/routes/*"],
+			"@query/*": ["./src/admin/queries/*"],
+			"@definitions/*": ["./src/admin/definitions/*"],
+			"@src/*": ["./src/*"]
+		},
+
+		"exactOptionalPropertyTypes": true,
+
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
+		"strict": true,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"skipLibCheck": true,
+
+		"allowJs": true
+	},
+
+	"include": [
+		"src/**/*",
+		"firebase-scipts/ingredient-bestfor.js",
+		"firebase-scipts/ingredient-categories.js",
+		"firebase-scipts/ingredient-common-prod.js",
+		"firebase-scipts/ingredient-unstable.js",
+		"firebase-scipts/claim-unstable.js",
+		"firebase-scipts/consumer-guide.js"
+	],
+	"exclude": ["node_modules"]
+}
