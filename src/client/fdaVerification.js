@@ -1,32 +1,28 @@
 import { db } from '@src/admin/config.js';
-import { onCall } from 'firebase-functions/https';
+import { HttpsError, onCall } from 'firebase-functions/https';
+import { format, isAfter, parse } from 'date-fns';
+import { tz } from '@date-fns/tz';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { logger } from 'firebase-functions/logger';
+export const fdaVerification = onCall({ region: 'asia-southeast1' }, async (req, _) => {
+	let { query, clientTimeZone } = req.data;
 
-export const fdaVerification = onCall(async (req, _) => {
-	let { query } = req.query;
-
-	if (!query.trim().length) {
-		return {
-			success: false,
-			error: 'Provide product name or notification number'
-		};
-	}
-
-	if (query[0].toLowerCase().startsWith('n')) {
-		query = query.trim().toUpperCase();
-	} else {
-		query = query.trim();
-	}
-
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), 30000);
+	query = query.product?.trim() ?? query.notificationNumber?.trim();
 
 	const url = new URL('https://verification.fda.gov.ph/api/search');
 	url.searchParams.append('q', query);
 
-	let data, status;
+	const todayDate = new Date();
+	let formattedVerificationDate = format(todayDate, "MMMM d',' yyyy 'at' p", {
+		in: tz(clientTimeZone)
+	});
+
+	let data = null,
+		status;
+
 	try {
 		const response = await fetch(url, {
-			signal: controller.signal,
+			signal: AbortSignal.timeout(30000),
 			method: 'GET',
 			headers: {
 				'User-Agent':
@@ -41,8 +37,19 @@ export const fdaVerification = onCall(async (req, _) => {
 
 		const result = await response.json();
 
+		logger.info('response', response);
+		logger.log('result', result);
+
 		if (result.error) {
 			throw new Error('FDA_SERVER_ERROR');
+		}
+
+		if (
+			result.cosmetic_NN?.length <= 0 &&
+			result.cdrr?.length <= 0 &&
+			result.fdafoodproducts?.length <= 0
+		) {
+			throw new Error('NO_RECORD_FOUND');
 		}
 
 		if (result.cosmetic_NN?.length > 0) {
@@ -58,12 +65,55 @@ export const fdaVerification = onCall(async (req, _) => {
 			text: 'OK'
 		};
 
-		saveToDB(data);
+		const productValidityDate = parse(
+			data.NOTIFICATION_VALIDITY,
+			'dd MMMM yyyy',
+			new Date()
+		);
+
+		const isExpired = isAfter(todayDate, productValidityDate);
+		const formattedProduct = data.PRODUCT_NAME.split(' ')
+			.map((str) => {
+				str = str.toLowerCase();
+
+				return str !== 'and' ? str[0].toUpperCase() + str.slice(1) : str;
+			})
+			.join(' ');
+
+		const formattedProductValidityDate = format(productValidityDate, "MMMM d',' yyyy");
+
+		data = {
+			product: formattedProduct,
+			company: data.COMPANY_NAME,
+			notification_number: data.ACCOUNTCODE,
+			is_expired: isExpired,
+			product_validity_date: formattedProductValidityDate,
+			verification_check_date: formattedVerificationDate
+		};
 	} catch (error) {
+		logger.log(error);
+
 		status = {
 			code: 500,
 			text: 'Something went wrong. Please try again later.'
 		};
+
+		if (error.name === 'TimeoutError') {
+			throw new HttpsError('aborted', 'Things are running a bit slow. Please try again');
+		}
+
+		if (error.message === 'NO_RECORD_FOUND') {
+			status = {
+				code: 200,
+				text: 'the request went through, but no record was found.'
+			};
+
+			data = {
+				name: query,
+				verification_check_date: formattedVerificationDate,
+				is_invalid: true
+			};
+		}
 
 		if (error.message === 'FDA_SERVER_ERROR') {
 			status = {
@@ -71,8 +121,10 @@ export const fdaVerification = onCall(async (req, _) => {
 				text: 'FDA servers are unavailable. Please try again later.'
 			};
 		}
-	} finally {
-		clearTimeout(timeoutId);
+	}
+
+	if (req.auth && data !== null) {
+		await saveToDB(req.auth.uid, data);
 	}
 
 	return {
@@ -81,9 +133,20 @@ export const fdaVerification = onCall(async (req, _) => {
 	};
 });
 
-function saveToDB(data) {
-	const collectionReference = db.collection('fda_verifications_dev');
-	const documentId = data.PRODUCT_NAME.split(' ').join('_').toLowerCase();
+async function saveToDB(uid, data) {
+	const collectionReference = db.collection('users');
+	const subCollectionReference = collectionReference.doc(uid).collection('fda_history');
 
-	collectionReference.doc(documentId).create(data);
+	await subCollectionReference.add({
+		...data,
+		createdAt: Timestamp.now(),
+		search_key: data?.product ?? data?.name ?? null
+	});
+
+	await collectionReference.doc(uid).set(
+		{
+			total_fda_notified: FieldValue.increment(1)
+		},
+		{ merge: true }
+	);
 }
