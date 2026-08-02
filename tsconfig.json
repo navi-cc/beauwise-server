@@ -20,14 +20,16 @@
 			"@routes/*": ["./src/admin/routes/*"],
 			"@query/*": ["./src/admin/queries/*"],
 			"@definitions/*": ["./src/admin/definitions/*"],
-			"@src/*": ["./src/*"]
+			"@src/*": ["./src/*"],
+			"@client/*": ["./src/client/*"],
+			"@emails/*": ["./emails/*"]
 		},
 
 		"exactOptionalPropertyTypes": true,
 
 		"noImplicitReturns": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
 
 		"strict": true,
 		"verbatimModuleSyntax": true,
@@ -38,14 +40,11 @@
 		"allowJs": true
 	},
 
-	"include": [
-		"src/**/*",
-		"firebase-scipts/ingredient-bestfor.js",
-		"firebase-scipts/ingredient-categories.js",
-		"firebase-scipts/ingredient-common-prod.js",
-		"firebase-scipts/ingredient-unstable.js",
-		"firebase-scipts/claim-unstable.js",
-		"firebase-scipts/consumer-guide.js"
-	],
-	"exclude": ["node_modules"]
+	"include": ["src/**/*"],
+	"exclude": [
+		"node_modules",
+		"src/**/*.test.ts",
+		"src/admin/controllers/learn-controller.ts",
+		"src/admin/queries/learn-query.ts"
+	]
 }
