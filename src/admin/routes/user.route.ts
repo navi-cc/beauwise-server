@@ -17,6 +17,12 @@ const userSchema = createUserSchema();
 
 userRouter.get('/', authorize('admin', userQuery), userController.getUsers(userQuery));
 
+userRouter.delete(
+	'/:id',
+	authorize('admin', userQuery),
+	userController.deleteUser(userQuery)
+);
+
 userRouter.patch(
 	'/:id/email',
 	validate(userSchema.changeEmail),
@@ -37,5 +43,26 @@ userRouter.patch(
 	authorize('admin', userQuery),
 	userController.disableUser
 );
+
+// userRouter.patch(
+// 	'/:id/email',
+// 	validate(userSchema.changeEmail),
+// 	authorize('admin', userQuery),
+// 	userController.changeUserEmail
+// );
+
+// userRouter.patch(
+// 	'/:id/password',
+// 	validate(userSchema.changePassword),
+// 	authorize('admin', userQuery),
+// 	userController.changeUserPassword
+// );
+
+// userRouter.patch(
+// 	'/:id/disable',
+// 	validate(userSchema.disable),
+// 	authorize('admin', userQuery),
+// 	userController.disableUser
+// );
 
 export { userRouter, userQuery };

@@ -1,8 +1,8 @@
 import express from 'express';
 
-import { userQuery } from '@routes/user.route.js';
+// import { userQuery } from '@routes/user.route.js';
 import { validate } from '@middleware/validate.js';
-import { authorize } from '@middleware/auth.js';
+// import { authorize } from '@middleware/auth.js';
 
 import { createLearnSchema } from '@zod/learn-schema.js';
 import { createLearnQuery } from '@query/learn-query.js';
@@ -13,11 +13,15 @@ import { createLearnRepository } from '@repo/learn-repository.js';
 import { createIngredientInstance } from '@domain/learn/ingredient.js';
 import { createConsumerGuideInstance } from '@domain/learn/consumer-guide.js';
 import { createMythFactInstance } from '@domain/learn/myth-fact.js';
+import { createSearchQuery } from '@query/search-query.js';
+import { authorize } from '@middleware/auth.js';
+import { userQuery } from './user.route.js';
 
 const learnRouter = express.Router();
 
+const searchQuery = createSearchQuery();
 const learnSchema = createLearnSchema();
-const learnQuery = createLearnQuery();
+const learnQuery = createLearnQuery(searchQuery);
 const learnQueryController = createLearnController({ query: learnQuery });
 
 const ingredientRepository = createLearnRepository(createIngredientInstance);
@@ -46,19 +50,22 @@ const consumerGuideCollectionName =
 learnRouter.get(
 	'/ingredients',
 	authorize('admin', userQuery),
-	learnQueryController.getItems(ingredientsCollectionName)
+	learnQueryController.getItems(ingredientsCollectionName, 'admin_ingredients_filter')
 );
 
 learnRouter.get(
-	'/claims',
+	'/myth-facts',
 	authorize('admin', userQuery),
-	learnQueryController.getItems(mythFactsCollectionName)
+	learnQueryController.getItems(mythFactsCollectionName, 'admin_myth_facts_filter')
 );
 
 learnRouter.get(
 	'/consumer-guides',
 	authorize('admin', userQuery),
-	learnQueryController.getItems(consumerGuideCollectionName)
+	learnQueryController.getItems(
+		consumerGuideCollectionName,
+		'admin_consumer_guides_filter'
+	)
 );
 
 learnRouter.put(
