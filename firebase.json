@@ -1,48 +1,59 @@
 {
-  "firestore": {
-    "database": "(default)",
-    "location": "nam5",
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "functions": [
-    {
-      "source": ".",
-      "codebase": "default",
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local",
-        "src",
-        "tsconfig.json",
-        "README.md",
-        "vitest.config.ts",
-        ".env",
-        ".prettierrc",
-        "firebase.emulator.data"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
-    }
-  ],
-  "emulators": {
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
-      "host": "0.0.0.0",
-      "port": 5001
-    },
-    "ui": {
-      "enabled": true
-    },
-    "singleProjectMode": true
-  },
-  "extensions": {
-    "firestore-typesense-search": "typesense/firestore-typesense-search@2.1.0"
-  }
+	"firestore": {
+		"database": "(default)",
+		"location": "nam5",
+		"rules": "firestore.rules",
+		"indexes": "firestore.indexes.json"
+	},
+	"storage": {
+		"rules": "storage.rules"
+	},
+	"functions": [
+		{
+			"source": ".",
+			"codebase": "default",
+			"disallowLegacyRuntimeConfig": true,
+			"ignore": [
+				"node_modules",
+				".git",
+				"firebase-debug.log",
+				"firebase-debug.*.log",
+				"*.local",
+				"src",
+				"tsconfig.json",
+				"README.md",
+				"vitest.config.ts",
+				".prettierrc",
+				"firebase.emulator.data/*/**",
+				"emails",
+				"./typesense-seed.js"
+			],
+			"predeploy": ["npm run build"]
+		}
+	],
+
+	"emulators": {
+		"auth": {
+			"port": 9099,
+			"host": "0.0.0.0"
+		},
+		"firestore": {
+			"port": 8080,
+			"host": "0.0.0.0"
+		},
+		"functions": {
+			"port": 5001,
+			"host": "0.0.0.0"
+		},
+		"ui": {
+			"enabled": true,
+			"host": "0.0.0.0"
+		},
+
+		"storage": {
+			"host": "0.0.0.0",
+			"port": 9199
+		},
+		"singleProjectMode": true
+	}
 }
