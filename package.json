@@ -6,7 +6,7 @@
 		"build:watch": "tsc --watch",
 		"alias:watch": "tsc-alias --watch",
 		"load:env": "cross-env NODE_ENV=development FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080",
-		"start:firebase": "npm run load:env -- firebase emulators:start --import=./firebase.emulator.data --only auth,functions,firestore",
+		"start:firebase": "npm run load:env -- firebase emulators:start --import=./firebase.emulator.data --only auth,functions,firestore,storage",
 		"dev": "npm run build && concurrently \"npm run build:watch\" \"npm run alias:watch\" \"npm run start:firebase\"",
 		"lint": "eslint .",
 		"shell": "firebase functions:shell",
@@ -14,20 +14,31 @@
 		"deploy": "firebase deploy --only functions",
 		"logs": "firebase functions:log",
 		"test": "npm run load:env vitest",
-		"seed": "node ./src/admin/seed.js",
-		"seed:local": "npm run load:env node ./src/admin/seed.js"
+		"seed": "node ./firebase-scripts/seed.js",
+		"seed:local": "npm run load:env node ./firebase-scripts/seed.js",
+		"email:dev": "email dev",
+		"test-file": "npm run load:env node ./test.js",
+		"typecheck": "tsc --noEmit"
 	},
 	"engines": {
 		"node": "22"
 	},
 	"main": "./dist/index.js",
 	"dependencies": {
+		"@date-fns/tz": "^1.5.0",
 		"@google-cloud/vision": "^5.3.7",
 		"@google/genai": "^2.9.0",
+		"cors": "^2.8.6",
+		"date-fns": "^4.4.0",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"firebase-admin": "^13.10.0",
 		"firebase-functions": "^7.2.5",
+		"fuse.js": "^7.4.2",
+		"handlebars": "^4.7.9",
+		"mailersend": "^3.1.0",
+		"postmark": "^5.1.0",
+		"sharp": "^0.35.3",
 		"typesense": "^3.0.6",
 		"zod": "^4.4.3",
 		"zod-to-json-schema": "^3.25.2"
