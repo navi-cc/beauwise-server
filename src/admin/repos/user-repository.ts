@@ -3,6 +3,10 @@ import { createUserInstance, type User, type UserInstance } from '@domain/user.j
 
 export type UserRepository = {
 	save(id: string, user: User): Promise<void>;
+	updateEmail(id: string, user: User): Promise<void>;
+	updateAccountStatus(id: string, user: User): Promise<void>;
+	updatePassword(id: string, user: User): Promise<void>;
+	removeUser(id: string): Promise<void>;
 	findById: (id: string) => Promise<UserInstance>;
 };
 
@@ -12,6 +16,29 @@ export function createUserRepository(): UserRepository {
 			...user
 		});
 	};
+
+	const removeUser = async (id: string) => {
+		await auth.deleteUser(id);
+	};
+
+	const updateEmail = async (id: string, user: User): Promise<void> => {
+		await auth.updateUser(id, {
+			email: user.email
+		});
+	};
+
+	const updateAccountStatus = async (id: string, user: User): Promise<void> => {
+		await auth.updateUser(id, {
+			disabled: user.disabled
+		});
+	};
+
+	const updatePassword = async (id: string, user: User): Promise<void> => {
+		await auth.updateUser(id, {
+			password: user.password
+		});
+	};
+
 	const findById = async (id: string): Promise<UserInstance> => {
 		const userRecord = await auth.getUser(id);
 
@@ -28,6 +55,10 @@ export function createUserRepository(): UserRepository {
 
 	return {
 		save,
-		findById
+		findById,
+		updateAccountStatus,
+		updateEmail,
+		removeUser,
+		updatePassword
 	};
 }
