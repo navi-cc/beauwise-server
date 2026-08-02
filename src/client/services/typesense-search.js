@@ -1,28 +1,24 @@
-import Typesense from 'typesense';
+import { typesense } from '@src/admin/config.js';
 
+// import Typesense from 'typesense';
 // Note
 // Properly configure this initialization, use specific key (client search only key)
 // or an admin key to use all different types of operations.
-const typesenseClient = new Typesense.Client({
-	nodes: [{ host: '127.0.0.1', port: '8108', protocol: 'http' }],
-	apiKey: 'xyz',
-	connectionTimeoutSeconds: 30
-});
 
-const performMultiSearch = async (searchParams, commonSearchParams) => {
-	return await typesenseClient.multiSearch.perform(searchParams, commonSearchParams);
+const performMultiSearch = async (searches) => {
+	return typesense.multiSearch.perform({ searches });
 };
 
-const performSearch = async (searchQuery, collectionName) => {
+const performSearch = async (searchQuery, collectionKey) => {
 	const searchParams = {
 		q: searchQuery,
-		query_by: collectionName ?? 'ingredient_name',
+		query_by: 'name',
 		num_typos: 1,
 		limit: 4
 	};
 
-	const searchResults = await typesenseClient
-		.collections('ingredients_glossary_search')
+	const searchResults = await typesense
+		.collections(collectionKey)
 		.documents()
 		.search(searchParams);
 	const searchedData = searchResults.hits.map(({ document }) => document);
@@ -30,4 +26,4 @@ const performSearch = async (searchQuery, collectionName) => {
 	return { searchedData };
 };
 
-export { typesenseClient, performMultiSearch, performSearch };
+export { typesense, performMultiSearch, performSearch };
