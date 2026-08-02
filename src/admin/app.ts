@@ -1,5 +1,4 @@
 import express, { type Response } from 'express';
-
 import { userRouter } from './routes/user.route.js';
 import { learnRouter } from '@routes/learn.route.js';
 import { errorHandler } from '@middleware/error.js';
