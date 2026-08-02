@@ -7,12 +7,13 @@ export interface UserController {
 	changeUserEmail(req: Request, res: Response): Promise<void>;
 	changeUserPassword(req: Request, res: Response): Promise<void>;
 	getUsers(userQuery: UserQuery): (req: Request, res: Response) => Promise<void>;
+	deleteUser(userQuery: UserQuery): (req: Request, res: Response) => Promise<void>;
 }
 
 export function createUserController(userService: UserService): UserController {
 	const disableUser = async (req: Request, res: Response) => {
 		const { validatedItem } = req.body;
-		const id = req.params.id;
+		const id = req.params.id as string;
 
 		userService.disableUser(id, validatedItem);
 
@@ -22,7 +23,7 @@ export function createUserController(userService: UserService): UserController {
 
 	const changeUserEmail = async (req: Request, res: Response) => {
 		const { validatedItem } = req.body;
-		const id = req.params.id;
+		const id = req.params.id as string;
 
 		userService.changeUserEmail(id, validatedItem);
 
@@ -32,7 +33,7 @@ export function createUserController(userService: UserService): UserController {
 
 	const changeUserPassword = async (req: Request, res: Response) => {
 		const { validatedItem } = req.body;
-		const id = req.params.id;
+		const id = req.params.id as string;
 
 		userService.changeUserPassword(id, validatedItem);
 
@@ -40,18 +41,36 @@ export function createUserController(userService: UserService): UserController {
 		return;
 	};
 
+	const deleteUser = (
+		userQuery: UserQuery
+	): ((req: Request, res: Response) => Promise<void>) => {
+		return async (req: Request, res: Response) => {
+			let status;
+
+			try {
+				await userQuery.deleteUser(req.params.id);
+				status = 200;
+			} catch {
+				status = 500;
+			}
+
+			res.sendStatus(status);
+			return;
+		};
+	};
+
 	const getUsers = (
 		userQuery: UserQuery
 	): ((req: Request, res: Response) => Promise<void>) => {
 		return async (req: Request, res: Response) => {
-			const maxPage = req.params.maxPage as unknown as number;
-			const nextPageToken = req.params.nextPageToken
-				? req.params.nextPageToken
-				: req.params.nextPageToken?.length <= 0
-					? undefined
-					: undefined;
+			const maxPage = Number(req.query.maxpage) || 10;
 
-			const data = await userQuery.getUsers(maxPage, nextPageToken);
+			const nextPageToken =
+				typeof req.query.nextpagetoken === 'string' ? req.query.nextpagetoken : undefined;
+
+			const pageCount = req.query.pagecount ? Number(req.query.pagecount) : undefined;
+
+			const data = await userQuery.getUsers(maxPage, nextPageToken, pageCount);
 
 			res.status(200).send(data);
 			return;
@@ -62,6 +81,7 @@ export function createUserController(userService: UserService): UserController {
 		disableUser,
 		changeUserEmail,
 		changeUserPassword,
-		getUsers
+		getUsers,
+		deleteUser
 	};
 }
