@@ -13,13 +13,13 @@ export function createLearnRepository<T extends LearnItem, U extends LearnItemIn
 		await db
 			.collection(collectionPath)
 			.doc(id)
-			.update(item as object);
+			.set(item as object, { merge: true });
 	};
 
 	const add = async (item: T, collectionPath: string): Promise<void> => {
 		const newItemInstance = createLearnItemInstance(item);
 		const newItem = newItemInstance.get();
-		await db.collection(collectionPath).doc(newItem.id).set(newItem);
+		await db.collection(collectionPath).doc(newItem.id).create(newItem);
 	};
 
 	const findById = async (id: string, collectionPath: string): Promise<U> => {
