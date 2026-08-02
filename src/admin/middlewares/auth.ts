@@ -35,9 +35,9 @@ export const authorize = (allowedRole: string, userQuery: UserQuery) => {
 
 		const user = await userQuery.getUser(userId);
 
-		const userRoles = user.getValues().customClaims.roles;
+		const userRole = user.getValues().customClaims.roles;
 
-		if (userRoles.includes(allowedRole)) {
+		if (userRole === allowedRole) {
 			return next();
 		}
 
