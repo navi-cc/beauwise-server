@@ -4,14 +4,19 @@ export interface UserService {
 	disableUser(id: string, status: boolean): Promise<void>;
 	changeUserEmail(id: string, email: string): Promise<void>;
 	changeUserPassword(id: string, password: string): Promise<void>;
+	removeUser(id: string): Promise<void>;
 }
 
 export function createUserService(repository: UserRepository): UserService {
+	const removeUser = async (id: string) => {
+		await repository.removeUser(id);
+	};
+
 	const disableUser = async (id: string, status: boolean) => {
 		const user = await repository.findById(id);
 
 		user.toggleDisable(status);
-		repository.save(id, user.getValues());
+		repository.updateAccountStatus(id, user.getValues());
 	};
 
 	const changeUserEmail = async (id: string, email: string) => {
@@ -19,18 +24,19 @@ export function createUserService(repository: UserRepository): UserService {
 
 		user.changeEmail(email);
 
-		repository.save(id, user.getValues());
+		repository.updateEmail(id, user.getValues());
 	};
 
 	const changeUserPassword = async (id: string, password: string) => {
 		const user = await repository.findById(id);
 
-		user.changeEmail(password);
-		await repository.save(id, user.getValues());
+		user.changePassword(password);
+		await repository.updatePassword(id, user.getValues());
 	};
 
 	return {
 		disableUser,
+		removeUser,
 		changeUserEmail,
 		changeUserPassword
 	};
