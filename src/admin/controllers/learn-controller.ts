@@ -1,7 +1,8 @@
 import type { LearnItem, LearnService } from '@definitions/learn-types.js';
 import type { LearnQuery } from '@query/learn-query.js';
 
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+import { logger } from 'firebase-functions/logger';
 import { z } from 'zod';
 
 export function createLearnController<TLearnService extends LearnService<LearnItem>>({
@@ -11,16 +12,45 @@ export function createLearnController<TLearnService extends LearnService<LearnIt
 	service?: TLearnService;
 	query?: LearnQuery;
 }) {
-	const getItems = (collectionPath: string) => {
+	const getItems = (collectionPath: string, searchKeyFilter: string) => {
 		return async (req: Request, res: Response) => {
-			const { pageSize, pageParam } = req.query;
+			const { pageSize, pageNumber, deleted, categories, commonProducts, bestFor } =
+				req.query;
 
-			const parsedPageSize = z.coerce.number().min(10).parse(pageSize);
+			let { q } = req.query;
+
+			const parsedCategories =
+				categories !== undefined ? z.coerce.string().parse(categories).split(',') : [];
+
+			const parsedCommonProducts =
+				commonProducts !== undefined
+					? z.coerce.string().parse(commonProducts).split(',')
+					: [];
+
+			const parsedBestFor =
+				bestFor !== undefined ? z.coerce.string().parse(bestFor).split(',') : [];
+
+			const parsedPageSize = z.coerce.number().min(10).parse(pageSize) ?? 10;
+			const parsedPageNumber = z.coerce.number().min(1).parse(pageNumber) ?? 1;
+
+			q = q ?? '';
+
+			const filters = {
+				best_for: parsedBestFor,
+				categories: parsedCategories,
+				common_products: parsedCommonProducts,
+				is_deleted: deleted as string
+			};
+
+			logger.log(filters);
 
 			const data = await query?.getItems(
-				collectionPath,
+				q as string,
 				parsedPageSize,
-				pageParam as string
+				parsedPageNumber,
+				collectionPath,
+				searchKeyFilter,
+				filters
 			);
 
 			res.status(200).send({ ...data });
@@ -36,13 +66,19 @@ export function createLearnController<TLearnService extends LearnService<LearnIt
 		res.status(200).send({ item });
 	};
 
-	const addItem = (collectionPath: string) => async (req: Request, res: Response) => {
-		const { validatedItem } = req.body;
+	const addItem =
+		(collectionPath: string) =>
+		async (req: Request, res: Response, next: NextFunction) => {
+			const { validatedItem } = req.body;
 
-		await service?.addItem(validatedItem, collectionPath);
+			try {
+				await service?.addItem(validatedItem, collectionPath);
+			} catch (error) {
+				return next(error);
+			}
 
-		res.sendStatus(200);
-	};
+			res.sendStatus(200);
+		};
 
 	return {
 		getItems,
