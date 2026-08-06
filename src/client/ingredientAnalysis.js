@@ -1,4 +1,5 @@
 import { onCall } from 'firebase-functions/https';
+import { logger } from 'firebase-functions/logger';
 import { analyzeIngredients } from './services/gen-ai.js';
 import { db } from '@src/admin/config.js';
 import { generateRecommendations } from './utility/recommendations.js';
@@ -37,10 +38,9 @@ export const ingredientAnalysis = async (
 		userProfile = userProfileResponse.data().profiling;
 
 		const userRecommendation = (await generateRecommendations(userProfile))
-			.map((item) => item.ingredient)
-			.slice(0, 3);
 
 		recommendations = userRecommendation;
+        logger.log("THE RECOMMENDATIONS: " + recommendations);
 	} else {
 		recommendations = [];
 		userProfile = emptyProfile;
