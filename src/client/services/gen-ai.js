@@ -127,7 +127,7 @@ CATEGORIZATION FLAGS (Assign exactly ONE mutually exclusive flag to EACH ingredi
 - "aligned": Use if cosmetic literature explicitly states the ingredient targets or supports the user's specific self-reported concerns (e.g., soothing ingredients for redness-prone skin).
 - "attention": Use if the ingredient conflicts with the user's profile based on literature (e.g., highly comedogenic ingredients for acne-prone users, or known drying alcohols for dry skin).
 - "base": Use for standard formulation components with no direct conflict or active targeting (e.g., solvents, preservatives, thickeners like Water, Glycerin, Carbomer).
-- "suggested": This flag is based on "user's suggested ingredients". Only use this flag if the user has "user's suggested ingredients". Only use this flag if you think that the ingredients or the current ingredient that you are analyzing is not within the "aligned" flag.
+- "suggested": This flag is based on "user's suggested ingredients". Only use this flag on three ingredients with the highest ranking values from "user's suggested ingredients". Only use this flag on ingredients from the "user's suggested ingredients" that has not been flagged with "restricted", "aligned", "attention", or "base". If a suggested ingredient has also appeared as flagged with either "restricted", "aligned", "attention", or "base", then replace the suggested ingredient with the another ingredient from the "user's suggested ingredients" with the highest ranking value. There must be exactly three ingredients with this flag.
 
 User's Self-Reported Skin Profile:
 Post-wash feel: ${userProfile.the_wash_test.post_wash_feel}
