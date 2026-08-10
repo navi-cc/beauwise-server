@@ -1,5 +1,6 @@
 import type { AccountStatus } from '@domain/user.js';
 import { type UserRepository } from '@repo/user-repository.js';
+import { logger } from 'firebase-functions/logger';
 
 export interface UserService {
 	changeUserStatus(id: string, status: AccountStatus): Promise<void>;
@@ -17,6 +18,7 @@ export function createUserService(repository: UserRepository): UserService {
 		const user = await repository.findById(id);
 
 		user.toggleStatus(status);
+        logger.info(user.getValues().status);
 		repository.updateAccountStatus(id, user.getValues().status);
 	};
 
