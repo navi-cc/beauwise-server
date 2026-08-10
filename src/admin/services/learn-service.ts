@@ -4,6 +4,7 @@ import type {
 	LearnItem,
 	BaseLearnItemInstace
 } from '@definitions/learn-types.js';
+import { logger } from 'firebase-functions/logger';
 
 export function createLearnService<
 	TItem extends LearnItem,
@@ -16,17 +17,14 @@ export function createLearnService<
 	): Promise<TItem> => {
 		const item = await repository.findById(itemId, collectionPath);
 
+		logger.log('service layer data', updatedItem);
 		item.update(updatedItem);
 
-		const { id } = item.get();
-
-		await repository.save(id, item.get(), collectionPath);
-
-		return item.get();
+		return (await repository.save(itemId, item.get(), collectionPath)) as TItem;
 	};
 
-	const addItem = async (newItem: TItem, collectionPath: string): Promise<void> => {
-		repository.add(newItem, collectionPath);
+	const addItem = async (newItem: TItem, collectionPath: string): Promise<LearnItem> => {
+		return await repository.add(newItem, collectionPath);
 	};
 
 	return {

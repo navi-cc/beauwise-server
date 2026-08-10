@@ -6,11 +6,14 @@ import { errorHandler } from './utility/error.js';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { tz } from '@date-fns/tz';
+import { logger } from 'firebase-functions/logger';
 
 export const ingredientAnalysisController = onCall(
 	errorHandler(async (req, _) => {
 		const { ingredients, product, clientTimeZone } = req.data;
 		const userId = req.auth?.uid ?? null;
+
+		logger.log('req params', req);
 
 		const { results } = await ingredientAnalysis(
 			ingredients,
@@ -36,16 +39,22 @@ export const ingredientAnalysis = async (
 		const userProfileResponse = await db.collection('users').doc(userId).get();
 		userProfile = userProfileResponse.data().profiling;
 
-		const userRecommendation = (await generateRecommendations(userProfile))
-			.map((item) => item.ingredient)
-			.slice(0, 3);
+		const userRecommendation = await generateRecommendations(userProfile);
 
 		recommendations = userRecommendation;
+
+		logger.log(
+			'recommendations',
+			recommendations.map(
+				(item) => `(ingredient: ${item.ingredient} ranking: ${item.ranking})`
+			)
+		);
 	} else {
 		recommendations = [];
 		userProfile = emptyProfile;
 	}
 
+	logger.log('recommendations', recommendations);
 	const results = await analyzeIngredients(userProfile, ingredients, recommendations);
 
 	const date = new Date();
@@ -53,10 +62,20 @@ export const ingredientAnalysis = async (
 		in: tz(clientTimeZone)
 	});
 
-	const alignedIngredients = results.filter(({ flag }) => flag === 'aligned');
-	const restrictedIngredients = results.filter(({ flag }) => flag === 'restricted');
-
 	if (userId) {
+		const alignedIngredients = results
+			.filter(({ flag }) => flag === 'aligned')
+			.map(({ ingredient, description }) => ({ ingredient, description }));
+		const restrictedIngredients = results
+			.filter(({ flag }) => flag === 'restricted')
+			.map(({ ingredient, description }) => ({ ingredient, description }));
+
+		const { aligned, restricted } = await updateUserAlignAndRestrictedIngredient(
+			userId,
+			alignedIngredients,
+			restrictedIngredients
+		);
+
 		await saveToDB(
 			userId,
 			{
@@ -65,8 +84,8 @@ export const ingredientAnalysis = async (
 				product: { ...product }
 			},
 			{
-				numberOfAligned: alignedIngredients.length,
-				numberOfRestricted: restrictedIngredients.length
+				alignedIngredients: aligned,
+				restrictedIngredients: restricted
 			}
 		);
 	}
@@ -74,7 +93,38 @@ export const ingredientAnalysis = async (
 	return { results };
 };
 
-async function saveToDB(uid, data, { numberOfAligned, numberOfRestricted }) {
+async function updateUserAlignAndRestrictedIngredient(
+	uid,
+	alignedIngredients,
+	restrictedIngredients
+) {
+	let aligned = [],
+		restricted = [];
+	const userDoc = await db.collection('users').doc(uid).get();
+
+	const previousAligned = userDoc.data()?.alignedIngredients ?? [];
+	const previousRestricted = userDoc.data()?.restrictedIngredients ?? [];
+
+	if (previousAligned?.length > 0) {
+		aligned = [...alignedIngredients, ...previousAligned];
+		aligned = [...new Map(aligned.map((item) => [item.ingredient, item])).values()];
+	} else {
+		aligned = [...alignedIngredients];
+	}
+
+	if (previousRestricted?.length > 0) {
+		restricted = [...restrictedIngredients, ...previousRestricted];
+		restricted = [...new Map(restricted.map((item) => [item.ingredient, item])).values()];
+	} else {
+		restricted = [...restrictedIngredients];
+	}
+
+	return {
+		aligned,
+		restricted
+	};
+}
+async function saveToDB(uid, data, { alignedIngredients, restrictedIngredients }) {
 	const collectionReference = db.collection('users');
 	const subCollectionReference = collectionReference
 		.doc(uid)
@@ -88,8 +138,8 @@ async function saveToDB(uid, data, { numberOfAligned, numberOfRestricted }) {
 	await collectionReference.doc(uid).set(
 		{
 			total_analysis: FieldValue.increment(1),
-			total_aligned_ingredients: FieldValue.increment(numberOfAligned),
-			total_restricted_ingredients: FieldValue.increment(numberOfRestricted)
+			alignedIngredients,
+			restrictedIngredients
 		},
 		{ merge: true }
 	);

@@ -14,11 +14,15 @@ export function createUserSchema() {
 			.refine((password) => /[!@#$%^&*]/.test(password))
 	});
 
-	const disable = z.boolean();
+	const status = z
+		.string()
+		.refine(
+			(val) => val === 'PENDING_DELETION' || val === 'ACTIVE' || val === 'DISABLED'
+		);
 
 	return {
 		changeEmail,
 		changePassword,
-		disable
+		status
 	};
 }

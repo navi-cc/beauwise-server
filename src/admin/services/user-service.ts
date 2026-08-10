@@ -1,7 +1,8 @@
+import type { AccountStatus } from '@domain/user.js';
 import { type UserRepository } from '@repo/user-repository.js';
 
 export interface UserService {
-	disableUser(id: string, status: boolean): Promise<void>;
+	changeUserStatus(id: string, status: AccountStatus): Promise<void>;
 	changeUserEmail(id: string, email: string): Promise<void>;
 	changeUserPassword(id: string, password: string): Promise<void>;
 	removeUser(id: string): Promise<void>;
@@ -12,11 +13,11 @@ export function createUserService(repository: UserRepository): UserService {
 		await repository.removeUser(id);
 	};
 
-	const disableUser = async (id: string, status: boolean) => {
+	const changeUserStatus = async (id: string, status: AccountStatus) => {
 		const user = await repository.findById(id);
 
-		user.toggleDisable(status);
-		repository.updateAccountStatus(id, user.getValues());
+		user.toggleStatus(status);
+		repository.updateAccountStatus(id, user.getValues().status);
 	};
 
 	const changeUserEmail = async (id: string, email: string) => {
@@ -35,7 +36,7 @@ export function createUserService(repository: UserRepository): UserService {
 	};
 
 	return {
-		disableUser,
+		changeUserStatus,
 		removeUser,
 		changeUserEmail,
 		changeUserPassword

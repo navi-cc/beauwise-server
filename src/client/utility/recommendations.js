@@ -93,10 +93,7 @@ export const generateRecommendations = async (userProfile) => {
 	let rankedIngredients = [];
 
 	//TODO: convert to fetch ingredients in a seperate function
-	const ingredientsCollectionName =
-		process.env.NODE_ENV === 'development'
-			? 'ingredients_glossary_dev'
-			: 'ingredients_glossary';
+	const ingredientsCollectionName = 'ingredients_glossary';
 
 	const collectionReference = db.collection(ingredientsCollectionName);
 
@@ -114,7 +111,6 @@ export const generateRecommendations = async (userProfile) => {
 		}
 		const rankedIngredient = {
 			ingredient: doc.data().name,
-			flag: 'recommended',
 			ranking: ranking
 		};
 		rankedIngredients = [...rankedIngredients, rankedIngredient];

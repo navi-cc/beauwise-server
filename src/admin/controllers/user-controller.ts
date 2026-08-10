@@ -3,7 +3,7 @@ import { type UserService } from '@services/user-service.js';
 import type { Request, Response } from 'express';
 
 export interface UserController {
-	disableUser(req: Request, res: Response): Promise<void>;
+	changeUserStatus(req: Request, res: Response): Promise<void>;
 	changeUserEmail(req: Request, res: Response): Promise<void>;
 	changeUserPassword(req: Request, res: Response): Promise<void>;
 	getUsers(userQuery: UserQuery): (req: Request, res: Response) => Promise<void>;
@@ -11,11 +11,11 @@ export interface UserController {
 }
 
 export function createUserController(userService: UserService): UserController {
-	const disableUser = async (req: Request, res: Response) => {
+	const changeUserStatus = async (req: Request, res: Response) => {
 		const { validatedItem } = req.body;
 		const id = req.params.id as string;
 
-		userService.disableUser(id, validatedItem);
+		userService.changeUserStatus(id, validatedItem);
 
 		res.sendStatus(200);
 		return;
@@ -78,7 +78,7 @@ export function createUserController(userService: UserService): UserController {
 	};
 
 	return {
-		disableUser,
+		changeUserStatus,
 		changeUserEmail,
 		changeUserPassword,
 		getUsers,

@@ -1,23 +1,18 @@
 import type { ConsumerGuide } from '@domain/learn/consumer-guide.js';
 import type { Ingredient } from '@domain/learn/ingredient.js';
-import type { MythFact } from '@domain/learn/myth-fact.js';
+import type { MythFact } from '@zod/learn-schema.js';
 import { typesense } from '@src/admin/config.js';
 import { onDocumentUpdated, onDocumentCreated } from 'firebase-functions/firestore';
 import { logger } from 'firebase-functions/logger';
 
-const ingredientCollectionPath =
-	process.env.NODE_ENV === 'development'
-		? 'ingredients_glossary_dev'
-		: 'ingredients_glossary';
-const ingredientDocumentPath = `${ingredientCollectionPath}/{ingredientId}`;
+const ingredientCollectionPath = 'ingredients_glossary';
+const ingredientDocumentPath = `${ingredientCollectionPath}/{id}`;
 
-const consumerGuideCollectionPath =
-	process.env.NODE_ENV === 'development' ? 'consumer_guides_dev' : 'consumer_guides';
-const consumerGuideDocumentPath = `${consumerGuideCollectionPath}/{ingredientId}`;
+const consumerGuideCollectionPath = 'consumer_guides';
+const consumerGuideDocumentPath = `${consumerGuideCollectionPath}/{id}`;
 
-const mythFactsCollectionPath =
-	process.env.NODE_ENV === 'development' ? 'myth_facts_dev' : 'myth_facts';
-const mythFactDocumentPath = `${mythFactsCollectionPath}/{ingredientId}`;
+const mythFactsCollectionPath = 'myth_facts';
+const mythFactDocumentPath = `${mythFactsCollectionPath}/{id}`;
 
 const typsenseOnUpdateIngredient = onDocumentUpdated(
 	ingredientDocumentPath,
@@ -73,10 +68,12 @@ const typsenseOnCreateConsumerGuide = onDocumentCreated(
 
 		const document = { ...snapshot?.data() } as ConsumerGuide;
 
+		const { id, name, is_deleted } = document;
+
 		await typesense
 			.collections('admin_consumer_guides_filter')
 			.documents()
-			.create(document);
+			.create({ id, name, is_deleted });
 	}
 );
 
@@ -96,8 +93,12 @@ const typsenseOnCreateMythFact = onDocumentCreated(mythFactDocumentPath, async (
 
 	const document = { ...snapshot?.data() } as MythFact;
 
+	const { id, name, is_deleted } = document;
 	try {
-		await typesense.collections('admin_myth_facts_filter').documents().create(document);
+		await typesense
+			.collections('admin_myth_facts_filter')
+			.documents()
+			.create({ id, name, is_deleted });
 	} catch (error) {
 		logger.info(error);
 	}

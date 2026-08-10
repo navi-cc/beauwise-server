@@ -1,13 +1,5 @@
-export interface MythFact {
-	readonly id: string;
-	name: string;
-	image_source: string;
-	topics: Array<{
-		[key: string]: string;
-	}>;
-	sources: Array<string>;
-	is_deleted: boolean;
-}
+import { type MythFact } from '@zod/learn-schema.js';
+import { logger } from 'firebase-functions/logger';
 
 export interface MythFactInstance {
 	update(updatedMythFact: MythFact): void;
@@ -23,13 +15,16 @@ export function createMythFactInstance(data: MythFact): MythFactInstance {
 	const update = (updatedMythFact: MythFact) => {
 		mythFact = {
 			...updatedMythFact,
-			topics: [...data.topics]
+			topics: [...updatedMythFact.topics]
 		};
+
+		logger.log('domain layer, the data is passed from service layer', data);
+		logger.log('domain layer data myth fact', mythFact);
 	};
 
 	const get = (): MythFact => ({
 		...mythFact,
-		topics: [...data.topics]
+		topics: [...mythFact.topics]
 	});
 
 	return {

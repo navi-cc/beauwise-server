@@ -36,16 +36,9 @@ const mythFactRepository = createLearnRepository(createMythFactInstance);
 const mythFactService = createLearnService(mythFactRepository);
 const mythFactController = createLearnController({ service: mythFactService });
 
-const ingredientsCollectionName =
-	process.env.NODE_ENV === 'development'
-		? 'ingredients_glossary_dev'
-		: 'ingredients_glossary';
-
-const mythFactsCollectionName =
-	process.env.NODE_ENV === 'development' ? 'myth_facts_dev' : 'myth_facts';
-
-const consumerGuideCollectionName =
-	process.env.NODE_ENV === 'development' ? 'consumer_guides_dev' : 'consumer_guides';
+const ingredientsCollectionName = 'ingredients_glossary';
+const mythFactsCollectionName = 'myth_facts';
+const consumerGuideCollectionName = 'consumer_guides';
 
 learnRouter.get(
 	'/ingredients',

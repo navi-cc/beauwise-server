@@ -1,5 +1,5 @@
 import vision from '@google-cloud/vision';
-import { onCall } from 'firebase-functions/https';
+import { HttpsError, onCall } from 'firebase-functions/https';
 import { parseIngredients } from './services/gen-ai.js';
 import { performMultiSearch } from './services/typesense-search.js';
 import { logger } from 'firebase-functions/logger';
@@ -19,10 +19,14 @@ export const ingredientScan = onCall(async (req, _) => {
 	const [result] = await visionClient.annotateImage(request);
 
 	if (!result.fullTextAnnotation) {
-		return [];
+		throw new HttpsError('cancelled', 'No text detected. Please try again');
 	}
 
 	let parsedIngredients = await parseIngredients(result.fullTextAnnotation.text);
+
+	if (parsedIngredients.length <= 0) {
+		throw new HttpsError('cancelled', 'No ingredients detected. Please try again');
+	}
 
 	const searches = parsedIngredients.map((ingredient) => ({
 		collection: 'ingredients',

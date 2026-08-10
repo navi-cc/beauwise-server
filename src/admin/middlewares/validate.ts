@@ -1,7 +1,7 @@
-import { ZodBoolean, ZodEmail, type ZodObject } from 'zod';
+import { ZodBoolean, ZodEmail, ZodString, type ZodObject } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 
-export function validate(schema: ZodObject | ZodEmail | ZodBoolean) {
+export function validate(schema: ZodObject | ZodEmail | ZodBoolean | ZodString) {
 	return async (req: Request, _: Response, next: NextFunction) => {
 		try {
 			const { updatedItem, newItem } = req.body;

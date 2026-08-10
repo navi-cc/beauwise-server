@@ -30,7 +30,11 @@ export const sendEmailVerificationCode = onCall(async (req) => {
 	const code = await otpService.storeAndGenerate(userInfo.email, 'email_verification');
 
 	try {
-		await emailService.send(userInfo.email, code);
+		if (process.env.NODE_ENV === 'development') {
+			console.log(code);
+		} else {
+			await emailService.send(userInfo.email, code);
+		}
 	} catch (err) {
 		logger.log(err);
 
@@ -50,6 +54,20 @@ export const verifyEmail = onCall(async (req) => {
 	}
 
 	return { result };
+});
+
+export const changeUserEmail = onCall(async ({ data }) => {
+	const { previousEmail, newEmail } = data;
+	const user = await auth.getUserByEmail(previousEmail);
+
+	const updatedUser = await auth.updateUser(user.uid, {
+		email: newEmail,
+		emailVerified: true
+	});
+
+	return {
+		updatedEmail: updatedUser.email
+	};
 });
 
 export const passwordReset = onCall(async (req) => {
@@ -73,7 +91,11 @@ export const passwordReset = onCall(async (req) => {
 		const emailType = 'password_reset';
 
 		try {
-			await emailService.send(userInfo.email, code, emailType);
+			if (process.env.NODE_ENV === 'development') {
+				console.log(code);
+			} else {
+				await emailService.send(userInfo.email, code, emailType);
+			}
 		} catch (err) {
 			logger.log(err);
 			throw new HttpsError('aborted', 'Something went wrong. Please resend code.');
@@ -126,6 +148,7 @@ const verifyIfUserExist = async (email) => {
 			exists: true
 		};
 	} catch (error) {
+		logger.info(error);
 		if (error.code == 'auth/user-not-found') {
 			return { provider_id: null, exists: false };
 		}
@@ -150,7 +173,8 @@ export const requestAccountDeletion = onCall(async (request) => {
 		);
 
 		await revokeAllUserSessions(uid);
-	} catch {
+	} catch (err) {
+		logger.info(err);
 		throw new HttpsError('cancelled', 'Request Account Deletion Failed.');
 	}
 
@@ -174,6 +198,76 @@ const revokeAllUserSessions = async (uid) => {
 	);
 };
 
+const MAX_ATTEMPTS = 5;
+const LOCK_TIME_MS = 15 * 60 * 1000;
+export const secureLogin = onCall(async (req) => {
+	const { email, password } = req.data;
+
+	const attemptRef = db.collection('login_attempts').doc(email);
+	const attemptDoc = await attemptRef.get();
+	const now = Timestamp.now();
+
+	if (attemptDoc.exists) {
+		const status = attemptDoc.data();
+		const lockedUntilInSeconds = status.lockedUntil?.seconds;
+
+		logger.log('account lock until', lockedUntilInSeconds);
+
+		if (status?.lockedUntil && lockedUntilInSeconds > now.seconds) {
+			return {
+				success: false,
+				message: 'This account is temporarily locked. Try again later.',
+				code: 'account-locked',
+				lockedUntil: lockedUntilInSeconds
+			};
+		}
+	}
+
+	try {
+		const response = await verifyUserPasswordRestAPI(email, password);
+
+		if (response.error) {
+			let failedAttempts = 1;
+			let lockedUntil = null;
+
+			if (attemptDoc.exists) {
+				failedAttempts = attemptDoc.data().failedAttempts + 1;
+				if (failedAttempts >= MAX_ATTEMPTS) {
+					lockedUntil = Timestamp.fromMillis(now.toMillis() + LOCK_TIME_MS);
+				}
+			}
+
+			await attemptRef.set(
+				{
+					failedAttempts,
+					lockedUntil,
+					lastAttempt: now
+				},
+				{ merge: true }
+			);
+
+			return {
+				success: false,
+				code: 'invalid-credentials',
+				remainingAttempts: MAX_ATTEMPTS - failedAttempts,
+				message: 'Invalid credential. Please try again'
+			};
+		} else {
+			const token = await auth.createCustomToken(response.localId);
+			await attemptRef.delete();
+			return { token, success: true };
+		}
+	} catch (error) {
+		logger.info(error);
+
+		if (error.code === 'permission-denied') {
+			throw new HttpsError(error.code, error.message);
+		} else {
+			throw new HttpsError('cancelled', error.message);
+		}
+	}
+});
+
 export const cancelAccountDeletion = onCall(async (request) => {
 	const uid = request.auth.uid;
 
@@ -187,3 +281,20 @@ export const cancelAccountDeletion = onCall(async (request) => {
 
 	return { success: true, message: 'Account deletion request canceled.' };
 });
+
+async function verifyUserPasswordRestAPI(email, password) {
+	const url =
+		process.env.NODE_ENV === 'development'
+			? 'http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=xyz'
+			: `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FB_WEB_API_KEY}`;
+
+	const response = await fetch(url, {
+		method: 'POST',
+		body: JSON.stringify({ email, password, returnSecureToken: true }),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	const user = await response.json();
+
+	return user;
+}

@@ -1,8 +1,14 @@
+export type AccountStatus =
+	| 'PENDING_DELETION'
+	| 'ACTIVE'
+	| 'DISABLED'
+	| 'REMOVE_PENDING_DELETION';
+
 export interface User {
 	readonly id: string;
 	email: string;
 	password: string;
-	disabled: boolean;
+	status: AccountStatus;
 	customClaims: {
 		[key: string]: string[] | string;
 	};
@@ -12,7 +18,7 @@ export interface UserInstance {
 	getValues(): User;
 	changeEmail(newEmail: string): void;
 	changePassword(newPassword: string): void;
-	toggleDisable(status: boolean): void;
+	toggleStatus(status: AccountStatus): void;
 	addRole(role: string): void;
 	removeRole(role: string): void;
 }
@@ -51,8 +57,8 @@ function createUserInstance(data: User): UserInstance {
 		user.customClaims.roles = '';
 	};
 
-	const toggleDisable = (status: boolean) => {
-		user.disabled = status;
+	const toggleStatus = (status: AccountStatus) => {
+		user.status = status;
 	};
 
 	const getValues = (): User => ({
@@ -66,7 +72,7 @@ function createUserInstance(data: User): UserInstance {
 		getValues,
 		changeEmail,
 		changePassword,
-		toggleDisable,
+		toggleStatus,
 		addRole,
 		removeRole
 	};

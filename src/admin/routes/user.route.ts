@@ -39,9 +39,9 @@ userRouter.patch(
 
 userRouter.patch(
 	'/:id/disable',
-	validate(userSchema.disable),
+	validate(userSchema.status),
 	authorize('admin', userQuery),
-	userController.disableUser
+	userController.changeUserStatus
 );
 
 // userRouter.patch(

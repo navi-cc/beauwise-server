@@ -14,7 +14,9 @@ import {
 	verifyEmail,
 	verifyPasswordReset,
 	requestAccountDeletion,
-	cancelAccountDeletion
+	cancelAccountDeletion,
+	changeUserEmail,
+	secureLogin
 } from './client/auth.js';
 import { ingredientAnalysisController } from './client/ingredientAnalysis.js';
 import { beforeCreated, processAccountDeletions } from './client/triggers/auth.js';
@@ -31,12 +33,14 @@ export const client = {
 			processAccountDeletions,
 			beforeCreated
 		},
+		secureLogin,
 		sendEmailVerificationCode,
 		verifyEmail,
 		checkIfUserAlreadyExist,
 		passwordReset,
 		verifyPasswordReset,
 		changeUserPassword,
+		changeUserEmail,
 		requestAccountDeletion,
 		cancelAccountDeletion
 	}
