@@ -17,7 +17,7 @@ export function createUserSchema() {
 	const status = z
 		.string()
 		.refine(
-			(val) => val === 'PENDING_DELETION' || val === 'ACTIVE' || val === 'DISABLED'
+			(val) => val === 'REMOVE_PENDING_DELETION' || val === 'PENDING_DELETION' || val === 'ACTIVE' || val === 'DISABLED'
 		);
 
 	return {
