@@ -60,10 +60,22 @@ export const changeUserEmail = onCall(async ({ data }) => {
 	const { previousEmail, newEmail } = data;
 	const user = await auth.getUserByEmail(previousEmail);
 
-	const updatedUser = await auth.updateUser(user.uid, {
-		email: newEmail,
-		emailVerified: true
-	});
+	let updatedUser;
+	try {
+		updatedUser = await auth.updateUser(user.uid, {
+			email: newEmail,
+			emailVerified: true
+		});
+	} catch (error) {
+		logger.info(error);
+
+		if (error.code === 'auth/email-already-exists') {
+			throw new HttpsError(
+				'cancelled',
+				'Cannot change email. The email is already in use.'
+			);
+		}
+	}
 
 	return {
 		updatedEmail: updatedUser.email
@@ -254,6 +266,8 @@ export const secureLogin = onCall(async (req) => {
 			};
 		} else {
 			const token = await auth.createCustomToken(response.localId);
+
+			logger.log('token', token);
 			await attemptRef.delete();
 			return { token, success: true };
 		}
@@ -291,7 +305,7 @@ async function verifyUserPasswordRestAPI(email, password) {
 	const response = await fetch(url, {
 		method: 'POST',
 		body: JSON.stringify({ email, password, returnSecureToken: true }),
-		headers: { 'Content-Type': 'application/json' }
+		headers: { 'Content-Type': 'application/json', Referer: 'https://app.beauwise.tech' }
 	});
 
 	const user = await response.json();
