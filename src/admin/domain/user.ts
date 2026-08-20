@@ -4,14 +4,17 @@ export type AccountStatus =
 	| 'DISABLED'
 	| 'REMOVE_PENDING_DELETION';
 
+export type CustomClaims = {
+	role: string;
+	permissions: string[];
+};
+
 export interface User {
 	readonly id: string;
 	email: string;
 	password: string;
 	status: AccountStatus;
-	customClaims: {
-		[key: string]: string[] | string;
-	};
+	customClaims: CustomClaims;
 }
 
 export interface UserInstance {
@@ -27,7 +30,8 @@ function createUserInstance(data: User): UserInstance {
 	const user: User = {
 		...data,
 		customClaims: {
-			roles: data.customClaims.roles ?? ''
+			role: data.customClaims.role ?? '',
+			permissions: [...data.customClaims.permissions]
 		}
 	};
 
@@ -40,21 +44,21 @@ function createUserInstance(data: User): UserInstance {
 	};
 
 	const addRole = (role: string) => {
-		if (user.customClaims.roles.includes(role)) {
+		if (user.customClaims.role.includes(role)) {
 			throw new Error('The role is already added.');
 		}
 
-		if (user.customClaims?.roles) {
-			user.customClaims.roles = role;
+		if (user.customClaims?.role) {
+			user.customClaims.role = role;
 		}
 	};
 
 	const removeRole = (removedRole: string) => {
-		if (!user.customClaims.roles.includes(removedRole)) {
+		if (!user.customClaims.role.includes(removedRole)) {
 			throw new Error("The role doesn't exist");
 		}
 
-		user.customClaims.roles = '';
+		user.customClaims.role = '';
 	};
 
 	const toggleStatus = (status: AccountStatus) => {
@@ -64,7 +68,8 @@ function createUserInstance(data: User): UserInstance {
 	const getValues = (): User => ({
 		...user,
 		customClaims: {
-			roles: user.customClaims.roles
+			role: user.customClaims.role,
+			permissions: [...data.customClaims.permissions]
 		}
 	});
 

@@ -9,6 +9,7 @@ import { tz } from '@date-fns/tz';
 import { logger } from 'firebase-functions/logger';
 
 export const ingredientAnalysisController = onCall(
+	{ cpu: 2, region: 'asia-southeast1' },
 	errorHandler(async (req, _) => {
 		const { ingredients, product, clientTimeZone } = req.data;
 		const userId = req.auth?.uid ?? null;

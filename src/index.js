@@ -1,3 +1,6 @@
+import { setGlobalOptions } from 'firebase-functions/v2';
+setGlobalOptions({ region: 'asia-east2' });
+
 import { onRequest } from 'firebase-functions/https';
 import { app } from './admin/app.js';
 import { typesenseTriggers } from './admin/firebase/triggers/typesense.js';

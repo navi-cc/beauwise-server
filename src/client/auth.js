@@ -238,7 +238,13 @@ export const secureLogin = onCall(async (req) => {
 	try {
 		const response = await verifyUserPasswordRestAPI(email, password);
 
-		if (response.error) {
+		logger.info('response secure login', response);
+
+		if (response?.error && response.error.message === 'USER_DISABLED') {
+			throw new HttpsError('cancelled', 'You are currently suspended. Please try again');
+		}
+
+		if (response?.error && response.error.message === 'INVALID_PASSWORD') {
 			let failedAttempts = 1;
 			let lockedUntil = null;
 
@@ -302,6 +308,7 @@ async function verifyUserPasswordRestAPI(email, password) {
 			? 'http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=xyz'
 			: `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FB_WEB_API_KEY}`;
 
+	logger.info('current secure login url', url);
 	const response = await fetch(url, {
 		method: 'POST',
 		body: JSON.stringify({ email, password, returnSecureToken: true }),

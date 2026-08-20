@@ -1,7 +1,7 @@
 import type { ConsumerGuide } from '@domain/learn/consumer-guide.js';
 import type { Ingredient } from '@domain/learn/ingredient.js';
 import type { MythFact } from '@zod/learn-schema.js';
-import { typesense } from '@src/admin/config.js';
+import { storage, typesense } from '@src/admin/config.js';
 import { onDocumentUpdated, onDocumentCreated } from 'firebase-functions/firestore';
 import { logger } from 'firebase-functions/logger';
 
@@ -78,9 +78,26 @@ const typsenseOnCreateConsumerGuide = onDocumentCreated(
 );
 
 const typsenseOnUpdateMythFact = onDocumentUpdated(mythFactDocumentPath, async (e) => {
-	const data = e.data?.after.data();
+	const staleData = e.data?.before.data() as MythFact;
+	const newData = e.data?.after.data() as MythFact;
 
-	const { id, is_deleted, name } = data as MythFact;
+	if (newData.topics.length < staleData.topics.length) {
+		const deletedTopics = staleData.topics.filter(
+			(item, index) => item?.topic !== newData.topics[index]?.topic
+		);
+
+		deletedTopics.pop();
+
+		logger.info('deleted topics', deletedTopics);
+
+		for await (const item of deletedTopics) {
+			const filePath = `/learn/${newData.baseImagePath}/${item.imageId}.webp`;
+			const bucket = storage.bucket('beauwise-asia');
+			await bucket.file(filePath).delete({ ignoreNotFound: true });
+		}
+	}
+
+	const { id, is_deleted, name } = newData as MythFact;
 
 	await typesense.collections('admin_myth_facts_filter').documents(id).update({
 		is_deleted,

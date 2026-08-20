@@ -44,7 +44,7 @@ function getPasswordResetTemplate(code: string, codeExpiration: number) {
 					<td dir="ltr" lang="en" style="padding: 0; margin: 0; flex: 1">
 						<img
 							alt="BeauWise Logo"
-							src="https://storage.googleapis.com/beauwise-1687a.firebasestorage.app/logo.png"
+							src="https://cdn.beauwise.tech/logo.png"
 							style="
 								display: block;
 								outline: none;

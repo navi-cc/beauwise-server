@@ -6,8 +6,7 @@ import { onSchedule } from 'firebase-functions/scheduler';
 export const beforeCreated = beforeUserCreated(() => {
 	return {
 		customClaims: {
-			role: 'basic',
-			permissions: ['read:documents']
+			role: 'basic'
 		}
 	};
 });

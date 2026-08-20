@@ -42,19 +42,19 @@ const consumerGuideCollectionName = 'consumer_guides';
 
 learnRouter.get(
 	'/ingredients',
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'read:documents', userQuery),
 	learnQueryController.getItems(ingredientsCollectionName, 'admin_ingredients_filter')
 );
 
 learnRouter.get(
 	'/myth-facts',
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'read:documents', userQuery),
 	learnQueryController.getItems(mythFactsCollectionName, 'admin_myth_facts_filter')
 );
 
 learnRouter.get(
 	'/consumer-guides',
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'read:documents', userQuery),
 	learnQueryController.getItems(
 		consumerGuideCollectionName,
 		'admin_consumer_guides_filter'
@@ -64,42 +64,42 @@ learnRouter.get(
 learnRouter.put(
 	'/ingredients/:id',
 	validate(learnSchema.ingredient),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'update:documents', userQuery),
 	ingredientController.updateItem(ingredientsCollectionName)
 );
 
 learnRouter.put(
 	'/consumer-guides/:id',
 	validate(learnSchema.consumerGuide),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'update:documents', userQuery),
 	consumerGuideController.updateItem(consumerGuideCollectionName)
 );
 
 learnRouter.put(
 	'/myth-facts/:id',
 	validate(learnSchema.mythFact),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'update:documents', userQuery),
 	mythFactController.updateItem(mythFactsCollectionName)
 );
 
 learnRouter.post(
 	'/ingredients',
 	validate(learnSchema.ingredient),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'create:documents', userQuery),
 	ingredientController.addItem(ingredientsCollectionName)
 );
 
 learnRouter.post(
 	'/consumer-guides',
 	validate(learnSchema.consumerGuide),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'create:documents', userQuery),
 	consumerGuideController.addItem(consumerGuideCollectionName)
 );
 
 learnRouter.post(
 	'/myth-facts',
 	validate(learnSchema.mythFact),
-	authorize('admin', userQuery),
+	authorize(['superadmin', 'admin'], 'create:documents', userQuery),
 	mythFactController.addItem(mythFactsCollectionName)
 );
 

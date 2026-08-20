@@ -7,7 +7,8 @@ const visionClient = new vision.ImageAnnotatorClient({
 	projectId: 'beauwise-1687a'
 });
 
-export const ingredientScan = onCall(async (req, _) => {
+export const ingredientScan = onCall({ region: 'asia-southeast1' }, async (req, _) => {
+	logger.info('ingredient scan request data', req.data);
 	const image = req.data.imageBase64;
 
 	const request = {
@@ -24,7 +25,7 @@ export const ingredientScan = onCall(async (req, _) => {
 
 	let parsedIngredients = await parseIngredients(result.fullTextAnnotation.text);
 
-	if (parsedIngredients.length <= 0) {
+	if (parsedIngredients?.length <= 0) {
 		throw new HttpsError('cancelled', 'No ingredients detected. Please try again');
 	}
 

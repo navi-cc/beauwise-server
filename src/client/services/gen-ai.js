@@ -99,7 +99,8 @@ export async function parseIngredients(rawOcrText) {
 		const result = ingredientsOutputSchema.parse(JSON.parse(response.text));
 
 		return result;
-	} catch {
+	} catch (err) {
+		logger.error('Error at parsing ingredients. Reason =>', err);
 		return null;
 	}
 }

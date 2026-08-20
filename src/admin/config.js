@@ -8,11 +8,12 @@ import Typesense from 'typesense';
 if (process.env.NODE_ENV === 'development') {
 	initializeApp({
 		projectId: 'beauwise-1687a',
-		storageBucket: 'beauwise-1687a.firebasestorage.app'
+		storageBucket: 'beauwise-asia'
 	});
 } else {
 	initializeApp({
-		storageBucket: 'beauwise-1687a.firebasestorage.app'
+		projectId: 'beauwise-1687a',
+		storageBucket: 'beauwise-asia'
 	});
 }
 
