@@ -5,7 +5,7 @@
 		"build": "tsc && tsc-alias",
 		"build:watch": "tsc --watch",
 		"alias:watch": "tsc-alias --watch",
-		"load:env": "cross-env NODE_ENV=development FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080",
+		"load:env": "cross-env NODE_ENV=development FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FUNCTIONS_DISCOVERY_TIMEOUT=30",
 		"start:firebase": "npm run load:env -- firebase emulators:start --import=./firebase.emulator.data --only auth,functions,firestore,storage",
 		"dev": "npm run build && concurrently \"npm run build:watch\" \"npm run alias:watch\" \"npm run start:firebase\"",
 		"lint": "eslint .",
