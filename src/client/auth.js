@@ -26,17 +26,20 @@ export const sendEmailVerificationCode = onCall(async (req) => {
 
 	const key = process.env.NODE_ENV === 'development' ? userInfo.email : req.rawRequest.ip;
 
-	await rateLimit(key);
-	const code = await otpService.storeAndGenerate(userInfo.email, 'email_verification');
-
 	try {
+		await rateLimit(key);
+		const code = await otpService.storeAndGenerate(userInfo.email, 'email_verification');
+
 		if (process.env.NODE_ENV === 'development') {
 			console.log(code);
 		} else {
 			await emailService.send(userInfo.email, code);
 		}
 	} catch (err) {
-		logger.log(err);
+		logger.error(
+			'An error occured while sending email verification code. Reason => ',
+			err
+		);
 
 		throw new HttpsError('aborted', 'Something went wrong. Please resend code.');
 	}

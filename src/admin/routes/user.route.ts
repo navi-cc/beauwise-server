@@ -77,7 +77,7 @@ userRouter.patch(
 
 userRouter.patch(
 	'/:id/role',
-	validate(userSchema.status),
+	validate(userSchema.role),
 	authorize(['superadmin'], 'update:adminUsers', userQuery),
 	userController.changeUserRole
 );
@@ -89,12 +89,12 @@ userRouter.patch(
 	userController.changeUserStatus
 );
 
-userRouter.patch(
-	'/:id/status',
-	validate(userSchema.status),
-	authorize('admin', userQuery),
-	userController.changeUserStatus
-);
+// userRouter.patch(
+// 	'/:id/status',
+// 	validate(userSchema.status),
+// 	authorize(['superadmin'], 'update:adminUsers', userQuery),
+// 	userController.changeUserStatus
+// );
 
 // userRouter.patch(
 // 	'/:id/email',

@@ -24,6 +24,7 @@ export function createUserSchema() {
 				val === 'DISABLED'
 		);
 
+	const role = z.string().refine((val) => val === 'admin' || val === 'basic');
 	const ALLOWED_DOMAINS = ['beauwise.tech', 'gmail.com'];
 	const newUser = z.object({
 		email: z.email().refine(
@@ -49,6 +50,7 @@ export function createUserSchema() {
 		changeEmail,
 		changePassword,
 		status,
-		newUser
+		newUser,
+		role
 	};
 }

@@ -159,6 +159,13 @@ export function createUserRepository(): UserRepository {
 			await auth.updateUser(id, {
 				disabled: disable
 			});
+
+			await userRef.set(
+				{
+					status: newStatus
+				},
+				{ merge: true }
+			);
 		}
 
 		if (
@@ -191,13 +198,19 @@ export function createUserRepository(): UserRepository {
 	): Promise<any> => {
 		let disable = false;
 
+		const user = await auth.getUser(id);
 		const userRef = db.collection('users').doc(id);
 
 		if (newStatus === 'DISABLED') {
+			await revokeAllUserSessions(id);
 			disable = true;
 		}
 
 		if (newStatus === 'ACTIVE') {
+			if (user.disabled) {
+				await removeRevokeUserSession(id);
+			}
+
 			disable = false;
 		}
 

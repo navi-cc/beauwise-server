@@ -85,17 +85,19 @@ export function createUserController(userService: UserService): UserController {
 		const { validatedItem } = req.body;
 		const id = req.params.id as string;
 
-		let status;
+		let status, message;
 
 		try {
-			await userService.changeUserRole(id, validatedItem.role);
+			await userService.changeUserRole(id, validatedItem);
+			message = 'User role have successfully updated.';
 			status = 200;
 		} catch (error) {
 			logger.error('Error occured at changing user role. Reason => ', error);
+			message = 'An error occured user role is not updated';
 			status = 400;
 		}
 
-		res.sendStatus(status);
+		res.status(status).send({ message });
 		return;
 	};
 
