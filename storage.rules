@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin');
+      allow write: if 
+        (request.auth != null && (request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin')) 
+        &&
+        (request.resource.contentType.matches('video/mp4') && request.resource.size < 1024 * 1024 * 1024)
+        ||
+        (request.resource.contentType.matches('^image/(jpeg|png|webp)$') && request.resource.size < 5 * 1024 * 1024);    
+    }
+  }
+}
