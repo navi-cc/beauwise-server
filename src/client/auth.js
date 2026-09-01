@@ -244,10 +244,10 @@ export const secureLogin = onCall(async (req) => {
 		logger.info('response secure login', response);
 
 		if (response?.error && response.error.message === 'USER_DISABLED') {
-			throw new HttpsError('cancelled', 'You are currently suspended. Please try again');
+			throw new HttpsError('cancelled', 'Login failed. You are currently suspended.');
 		}
 
-		if (response?.error && response.error.message === 'INVALID_PASSWORD') {
+		if (response?.error && response.error.message === 'INVALID_LOGIN_CREDENTIALS') {
 			let failedAttempts = 1;
 			let lockedUntil = null;
 
