@@ -61,23 +61,38 @@ export function createLearnController<TLearnService extends LearnService<LearnIt
 		const { validatedItem } = req.body;
 		const id = req.params.id;
 
-		const item = await service?.updateItem(id, validatedItem, collectionPath);
+		let status,
+			message,
+			item = null;
 
-		res.status(200).send({ item });
+		try {
+			item = await service?.updateItem(id, validatedItem, collectionPath);
+			status = 200;
+			message = 'Item is successfully added.';
+		} catch {
+			status = 400;
+			message = 'Item is not updated. Please try again.';
+		}
+
+		res.status(status).send({ item, message });
 	};
 
 	const addItem =
-		(collectionPath: string) =>
-		async (req: Request, res: Response, next: NextFunction) => {
+		(collectionPath: string) => async (req: Request, res: Response, _: NextFunction) => {
 			const { validatedItem } = req.body;
+
+			let status, message;
 
 			try {
 				await service?.addItem(validatedItem, collectionPath);
-			} catch (error) {
-				return next(error);
+				status = 200;
+				message = 'Item is successfully added.';
+			} catch {
+				status = 400;
+				message = 'Item is not added. Please try again.';
 			}
 
-			res.sendStatus(200);
+			res.status(status).send({ message });
 		};
 
 	return {
