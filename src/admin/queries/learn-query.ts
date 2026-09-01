@@ -93,7 +93,7 @@ export function createLearnQuery(searchQuery: SearchQuery): LearnQuery {
 			const documentIds = searchResults.hits?.map(({ document }) => document.id) ?? [];
 			const documentRefs = documentIds.map((id: string) => collectionReference.doc(id));
 			const snapshot = await db.getAll(...documentRefs);
-			data = snapshot.map((doc) => doc.data()) as LearnItem[];
+			data = snapshot.filter((doc) => doc.exists).map((doc) => doc.data()) as LearnItem[];
 		} else {
 			data = [];
 		}
