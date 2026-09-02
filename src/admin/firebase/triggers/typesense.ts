@@ -87,20 +87,26 @@ const typsenseOnUpdateMythFact = onDocumentUpdated(
 		const staleData = e.data?.before.data() as MythFact;
 		const newData = e.data?.after.data() as MythFact;
 
-		if (newData.topics.length < staleData.topics.length) {
-			const deletedTopics = staleData.topics.filter(
-				(item, index) => item?.topic !== newData.topics[index]?.topic
+		const bucket = storage.bucket('beauwise-asia');
+
+		const staleTopics = staleData.topics ?? [];
+		const newTopics = newData.topics ?? [];
+
+		const newImageIds = new Set(newTopics.map((t) => t.imageId).filter(Boolean));
+
+		const orphanedTopics = staleTopics.filter(
+			(item) => item.imageId && !newImageIds.has(item.imageId)
+		);
+
+		if (orphanedTopics.length > 0) {
+			logger.info('Deleting orphaned topic images:', orphanedTopics);
+			const basePath = staleData.baseImagePath ?? newData.baseImagePath;
+			await Promise.allSettled(
+				orphanedTopics.map(async (item) => {
+					const filePath = `/learn/${basePath}/${item.imageId}.webp`;
+					return bucket.file(filePath).delete({ ignoreNotFound: true });
+				})
 			);
-
-			deletedTopics.pop();
-
-			logger.info('deleted topics', deletedTopics);
-
-			for await (const item of deletedTopics) {
-				const filePath = `/learn/${newData.baseImagePath}/${item.imageId}.webp`;
-				const bucket = storage.bucket('beauwise-asia');
-				await bucket.file(filePath).delete({ ignoreNotFound: true });
-			}
 		}
 
 		const { id, is_deleted, name } = newData as MythFact;
@@ -139,3 +145,13 @@ export const typesenseTriggers = {
 	typsenseOnCreateMythFact,
 	typsenseOnUpdateMythFact
 };
+
+function checkFoo(beforeData: MythFact, afterData: MythFact) {
+	logger.info('before data', beforeData);
+	logger.info('after data', afterData);
+
+	return (
+		beforeData.topics.length === afterData.topics.length &&
+		JSON.stringify(beforeData) === JSON.stringify(afterData)
+	);
+}
