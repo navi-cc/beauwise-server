@@ -87,26 +87,29 @@ const typsenseOnUpdateMythFact = onDocumentUpdated(
 		const staleData = e.data?.before.data() as MythFact;
 		const newData = e.data?.after.data() as MythFact;
 
-		const bucket = storage.bucket('beauwise-asia');
+		const newImageIds = new Set(newData.topics.map((topic) => topic.imageId));
 
-		const staleTopics = staleData.topics ?? [];
-		const newTopics = newData.topics ?? [];
-
-		const newImageIds = new Set(newTopics.map((t) => t.imageId).filter(Boolean));
-
-		const orphanedTopics = staleTopics.filter(
-			(item) => item.imageId && !newImageIds.has(item.imageId)
+		const deletedTopics = staleData.topics.filter(
+			(staleTopic) => !newImageIds.has(staleTopic.imageId)
 		);
 
-		if (orphanedTopics.length > 0) {
-			logger.info('Deleting orphaned topic images:', orphanedTopics);
-			const basePath = staleData.baseImagePath ?? newData.baseImagePath;
-			await Promise.allSettled(
-				orphanedTopics.map(async (item) => {
-					const filePath = `/learn/${basePath}/${item.imageId}.webp`;
-					return bucket.file(filePath).delete({ ignoreNotFound: true });
-				})
-			);
+		logger.info('new image ids', newImageIds);
+		logger.info('deleted topics', deletedTopics);
+
+		if (deletedTopics.length > 0) {
+			const bucket = storage.bucket('beauwise-asia');
+			logger.info('Deleting orphaned topic images:', deletedTopics);
+
+			for await (const item of deletedTopics) {
+				if (!item.imageId) continue;
+				const filePath = `learn/${newData.baseImagePath}/${item.imageId}.webp`;
+
+				try {
+					await bucket.file(filePath).delete({ ignoreNotFound: true });
+				} catch (error) {
+					logger.error(`Failed to delete image: ${filePath}`, error);
+				}
+			}
 		}
 
 		const { id, is_deleted, name } = newData as MythFact;
