@@ -122,6 +122,9 @@ export function createUserRepository(): UserRepository {
 			role,
 			permissions
 		});
+
+		await revokeAllUserSessions(id);
+		await removeUserSessionId(id);
 	};
 
 	const updateAccountStatus = async (
@@ -282,5 +285,11 @@ async function removeRevokeUserSession(uid: string) {
 	await db.collection('users').doc(uid).update({
 		tokensValidAfterTime: FieldValue.delete(),
 		revokedAt: FieldValue.delete()
+	});
+}
+
+async function removeUserSessionId(uid: string) {
+	await db.collection('users').doc(uid).update({
+		currentSessionId: FieldValue.delete()
 	});
 }
