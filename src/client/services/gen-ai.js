@@ -284,6 +284,7 @@ export async function analyzeIngredients(userProfile, ingredients, recommendatio
 
 	const parsedOutput = JSON.parse(response.text);
 
+	logger.info('selected model', model);
 	logger.log('ingredients scanned', ingredients);
 	logger.log('parsed output', response.text);
 	return analysisSchema.parse(parsedOutput);

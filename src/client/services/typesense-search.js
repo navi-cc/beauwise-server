@@ -14,7 +14,8 @@ const performSearch = async (searchQuery, collectionKey) => {
 		q: searchQuery,
 		query_by: 'name',
 		num_typos: 1,
-		limit: 4
+		limit: 4,
+		filter_by: 'is_deleted:=false'
 	};
 
 	const searchResults = await typesense

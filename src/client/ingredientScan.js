@@ -11,6 +11,10 @@ export const ingredientScan = onCall({ region: 'asia-southeast1' }, async (req, 
 	logger.info('ingredient scan request data', req.data);
 	const image = req.data.imageBase64;
 
+	if (image === undefined || !image) {
+		throw new HttpsError('data-loss', 'Invalid Input. Please try again');
+	}
+
 	const request = {
 		image: {
 			content: image
@@ -34,6 +38,7 @@ export const ingredientScan = onCall({ region: 'asia-southeast1' }, async (req, 
 		q: ingredient,
 		query_by: 'name',
 		num_typos: 2,
+		filter_by: 'is_deleted:=false',
 		prioritize_exact_match: true,
 		drop_tokens_threshold: 0,
 		exhaust_max_matched_tokens: true
