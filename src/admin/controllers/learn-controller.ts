@@ -69,7 +69,9 @@ export function createLearnController<TLearnService extends LearnService<LearnIt
 			item = await service?.updateItem(id, validatedItem, collectionPath);
 			status = 200;
 			message = 'Item is successfully added.';
-		} catch {
+		} catch (err) {
+			logger.error(err);
+
 			status = 400;
 			message = 'Item is not updated. Please try again.';
 		}
