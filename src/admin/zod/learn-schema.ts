@@ -10,7 +10,9 @@ const mythFactTopicSchema = z.object({
 	fact: z.string().min(1, 'Fact is required'),
 	myth: z.string().min(1, 'Myth is required'),
 	imageId: z.string().optional(),
-	fileHash: z.string()
+	fileHash: z.string(),
+	is_deleted: z.boolean().optional(),
+	scheduledDeleteAt: z.any().optional()
 });
 
 export const mythFact = z.object({
@@ -24,7 +26,8 @@ export const mythFact = z.object({
 	}),
 	baseImagePath: z.string(),
 	sources: z.array(sourceSchema),
-	is_deleted: z.coerce.boolean().optional()
+	is_deleted: z.coerce.boolean().optional(),
+	hasPendingTopicDeletions: z.boolean().optional()
 });
 
 export type MythFact = z.infer<typeof mythFact> & {
@@ -44,7 +47,10 @@ export function createLearnSchema() {
 		fact: z.string().min(1, 'Fact is required'),
 		imageId: z.string().optional(),
 		myth: z.string().min(1, 'Myth is required'),
-		fileHash: z.string()
+		fileHash: z.string(),
+		is_deleted: z.coerce.boolean().optional(),
+		scheduledDeleteAt: z.any().optional(),
+		hasPendingTopicDeletions: z.coerce.boolean().optional()
 	});
 
 	const ingredient = z.object({
@@ -73,7 +79,8 @@ export function createLearnSchema() {
 		}),
 		baseImagePath: z.string(),
 		sources: z.array(sourceSchema),
-		is_deleted: z.coerce.boolean().optional()
+		is_deleted: z.coerce.boolean().optional(),
+		hasPendingTopicDeletions: z.coerce.boolean().optional()
 	});
 
 	const consumerGuide = z.object({
