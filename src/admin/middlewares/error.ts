@@ -109,6 +109,9 @@ function firebaseErrorHandler(err: FirebaseAuthError): {
 			break;
 	}
 
+	logger.error('code', code);
+	logger.error('message', message);
+
 	return {
 		message,
 		code,
