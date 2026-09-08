@@ -24,6 +24,7 @@ import {
 import { ingredientAnalysisController } from './client/ingredientAnalysis.js';
 import { beforeCreated, processAccountDeletions } from './client/triggers/auth.js';
 import { storageTriggers } from './admin/firebase/triggers/storage.js';
+import { cleanupExpiredTopics } from './admin/firebase/scheduled/deletions.js';
 
 export const client = {
 	fdaVerification,
@@ -54,6 +55,8 @@ export const adminTriggers = {
 	typesense: {
 		...typesenseTriggers
 	},
+
+	cleanupExpiredTopics,
 
 	storage: {
 		...storageTriggers
