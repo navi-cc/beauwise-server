@@ -9,7 +9,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/logger';
 
 const firebaseOtpStorage = fbOtpStorage();
-const emailService = createEmailService(mailerSend());
+export const emailService = createEmailService(mailerSend());
 const otpService = createOtpService(firebaseOtpStorage);
 
 export const checkIfUserAlreadyExist = onCall(async (req) => {
