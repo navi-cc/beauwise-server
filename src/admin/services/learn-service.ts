@@ -4,6 +4,7 @@ import type {
 	LearnItem,
 	BaseLearnItemInstace
 } from '@definitions/learn-types.js';
+import { AppError } from '@utils/error.js';
 import type { MythFact } from '@zod/learn-schema.js';
 import { addDays } from 'date-fns';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -19,6 +20,10 @@ export function createLearnService<
 		collectionPath: string
 	): Promise<TItem> => {
 		const item = await repository.findById(itemId, collectionPath);
+
+		if (item.get().is_deleted) {
+			throw new AppError('Item cannot be updated. The item is deleted', 500);
+		}
 
 		logger.log('service layer data', updatedItem);
 		item.update(updatedItem);
