@@ -14,7 +14,12 @@ export function createEmailService(emailProvider: BaseEmailProvider) {
 		await emailProvider.send(hostEmail, email, html);
 	};
 
-	return { send };
+	const sendAccountDeleted = async (email: string) => {
+		const html = getAccountDeleteTemplate();
+		await emailProvider.send(hostEmail, email, html);
+	};
+
+	return { send, sendAccountDeleted };
 }
 
 function getPasswordResetTemplate(code: string, codeExpiration: number) {
@@ -176,6 +181,296 @@ function getPasswordResetTemplate(code: string, codeExpiration: number) {
 														>
 															If you did not ask to reset your password, you can
 															safely ignore this email.
+														</p>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+										<table
+											align="center"
+											width="100%"
+											border="0"
+											cellpadding="0"
+											cellspacing="0"
+											role="presentation"
+											style="max-width: 37.5em; margin-top: 20px"
+										>
+											<tbody>
+												<tr style="width: 100%">
+													<td>
+														<p
+															style="
+																font-size: 6px;
+																line-height: 24px;
+																margin-top: 0;
+																margin-bottom: 0;
+																font-family: system-ui;
+															"
+														>
+															Best regards,
+														</p>
+														<p
+															style="
+																font-size: 6px;
+																line-height: 12px;
+																margin-top: 0;
+																margin-bottom: 0;
+																font-family: system-ui;
+															"
+														>
+															The BeauWise Team
+														</p>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<table
+							align="center"
+							width="100%"
+							border="0"
+							cellpadding="0"
+							cellspacing="0"
+							role="presentation"
+							style="
+								max-width: 37.5em;
+								width: 100%;
+								background-color: #8b78ff;
+								margin: 0;
+								margin-top: 40px;
+								border-radius: 4px;
+							"
+						>
+							<tbody>
+								<tr style="width: 100%">
+									<td style="padding: 12px">
+										<table
+											align="center"
+											width="100%"
+											border="0"
+											cellpadding="0"
+											cellspacing="0"
+											role="presentation"
+										>
+											<tbody>
+												<tr>
+													<td>
+														<table>
+															<tr>
+																<td>
+																	<p
+																		style="
+																			font-size: 6px;
+																			margin-top: 0;
+																			margin-bottom: 0;
+																			font-family: system-ui;
+																			color: #fff;
+																		"
+																	>
+																		Need assistance?
+																	</p>
+																	<p
+																		style="
+																			font-size: 6px;
+																			margin-top: 0;
+																			margin-bottom: 0;
+																			font-family: system-ui;
+																			color: #fff;
+																		"
+																	>
+																		Reach out to us at support@beauwise.tech
+																	</p>
+																</td>
+															</tr>
+															<tr>
+																<td>
+																	<p
+																		style="
+																			font-size: 6px;
+																			margin-top: 0;
+																			margin-bottom: 0;
+																			font-family: system-ui;
+																			color: #fff;
+																		"
+																	>
+																		© 2026 RISE Inc. All rights reserved.
+																	</p>
+																</td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<!--/$-->
+	</body>
+</html>
+`;
+}
+
+function getAccountDeleteTemplate() {
+	return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+	<head>
+		<link
+			rel="preload"
+			as="image"
+			href="https://storage.googleapis.com/beauwise-1687a.firebasestorage.app/logo.png"
+		/>
+		<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+		<meta name="x-apple-disable-message-reformatting" />
+	</head>
+	<body dir="ltr" lang="en" style="margin: 0; padding: 0">
+		<!--$--><!--html--><!--head--><!--body-->
+		<table
+			border="0"
+			width="100%"
+			cellpadding="0"
+			cellspacing="0"
+			role="presentation"
+			align="center"
+		>
+			<tbody>
+				<tr>
+					<td dir="ltr" lang="en" style="padding: 0; margin: 0; flex: 1">
+						<img
+							alt="BeauWise Logo"
+							src="https://cdn.beauwise.tech/logo.png"
+							style="
+								display: block;
+								outline: none;
+								border: none;
+								text-decoration: none;
+								width: 50px;
+								margin-left: auto;
+								margin-right: auto;
+								margin-block: 20px;
+							"
+						/>
+						<table
+							align="center"
+							width="100%"
+							border="0"
+							cellpadding="0"
+							cellspacing="0"
+							role="presentation"
+							style="max-width: 37.5em; padding-inline: 10px; padding-block: 10px"
+						>
+							<tbody>
+								<tr style="width: 100%">
+									<td>
+										<table
+											align="center"
+											width="100%"
+											border="0"
+											cellpadding="0"
+											cellspacing="0"
+											role="presentation"
+											style="max-width: 37.5em"
+										>
+											<tbody>
+												<tr style="width: 100%">
+													<td>
+														<p
+															style="
+																font-size: 6px;
+																line-height: 24px;
+																font-family: system-ui;
+																margin-top: 0;
+																margin-bottom: 0;
+															"
+														>
+															Hi!
+														</p>
+														<p
+															style="
+																font-size: 6px;
+																line-height: 12px;
+																font-family: system-ui;
+																margin-top: 0;
+																margin-bottom: 0;
+															"
+														>
+															This email confirms that your account has been successfully deleted as per your request.
+														</p>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+										<table
+										
+											width="100%"
+											border="0"
+											cellpadding="0"
+											cellspacing="0"
+											role="presentation"
+											style="
+												max-width: 37.5em;
+												margin-top: 8px;
+												width: max-content;
+		
+											"
+										>
+											<tbody>
+												<tr>
+													<td>
+													   <p
+															style="
+															font-weight: 600;
+																font-size: 6px;
+																line-height: 12px;
+																font-family: system-ui;
+																margin-top: 0;
+																margin-bottom: 0;
+															"
+														>
+															What happens next?
+															
+															<br>
+														
+															      
+															            <span style="font-weight: 700;">  Data Removal  </span>: All of your personal data, profile information, and saved preferences have been permanently removed from our active databases in accordance with our privacy policy.
+															       
+															
+														</p>
+												
+													</td>
+												</tr>
+											</tbody>
+										</table>
+										<table
+											align="center"
+											width="100%"
+											border="0"
+											cellpadding="0"
+											cellspacing="0"
+											role="presentation"
+											style="max-width: 37.5em; margin-top: 40px"
+										>
+											<tbody>
+												<tr style="width: 100%">
+													<td>
+														<p
+															style="
+																font-size: 6px;
+																line-height: 24px;
+																margin-top: 0;
+																margin-bottom: 0;
+																font-family: system-ui;
+															"
+														>
+														Thank you for using our BeauWise. If you ever decide to return, you can always create a new account on our app.
 														</p>
 													</td>
 												</tr>
