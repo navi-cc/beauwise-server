@@ -104,6 +104,11 @@ export const generateRecommendations = async (userProfile) => {
 		if (doc.data().name === 'Chemical X') {
 			return; //NOTE: Skip chemical X from recommendations, its in DB
 		}
+
+		if (doc.data().name === 'Tretinoin') {
+			return;
+		}
+
 		for (const category of doc.data().categories) {
 			if (profileWeights[category]) {
 				ranking += profileWeights[category];
