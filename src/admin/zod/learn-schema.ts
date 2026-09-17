@@ -11,6 +11,7 @@ const mythFactTopicSchema = z.object({
 	myth: z.string().min(1, 'Myth is required'),
 	imageId: z.string().optional(),
 	fileHash: z.string(),
+	sourceName: z.string().optional(),
 	is_deleted: z.boolean().optional(),
 	scheduledDeleteAt: z.any().optional()
 });
@@ -19,10 +20,12 @@ export const mythFact = z.object({
 	name: z.string(),
 	topics: z.array(mythFactTopicSchema),
 	displayImage: z.object({
-		fileHash: z.string()
+		fileHash: z.string(),
+		sourceName: z.string().optional()
 	}),
 	videoGuide: z.object({
-		fileHash: z.string()
+		fileHash: z.string(),
+		sourceName: z.string().optional()
 	}),
 	baseImagePath: z.string(),
 	sources: z.array(sourceSchema),
@@ -50,6 +53,7 @@ export function createLearnSchema() {
 		fileHash: z.string(),
 		is_deleted: z.coerce.boolean().optional(),
 		scheduledDeleteAt: z.any().optional(),
+		sourceName: z.string().optional(),
 		hasPendingTopicDeletions: z.coerce.boolean().optional()
 	});
 
@@ -72,10 +76,12 @@ export function createLearnSchema() {
 		name: z.string(),
 		topics: z.array(mythFactTopicSchema),
 		displayImage: z.object({
-			fileHash: z.string()
+			fileHash: z.string(),
+			sourceName: z.string().optional()
 		}),
 		videoGuide: z.object({
-			fileHash: z.string()
+			fileHash: z.string(),
+			sourceName: z.string().optional()
 		}),
 		baseImagePath: z.string(),
 		sources: z.array(sourceSchema),
@@ -88,6 +94,7 @@ export function createLearnSchema() {
 		definition: z.string(),
 		usage: z.string(),
 		imageId: z.string().optional(),
+		imageSourceName: z.string().optional(),
 		fileHash: z.string(),
 		sources: z.array(sourceSchema),
 		is_deleted: z.coerce.boolean().optional()
