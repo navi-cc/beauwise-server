@@ -47,7 +47,8 @@ export function createLearnService<
 								imageId: item.imageId,
 								is_deleted: Boolean(item?.is_deleted),
 								myth: item.myth,
-								topic: item.topic
+								topic: item.topic,
+								sourceName: item.sourceName
 							};
 				})
 			};
