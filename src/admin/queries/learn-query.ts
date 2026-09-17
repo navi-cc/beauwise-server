@@ -97,8 +97,9 @@ export function createLearnQuery(searchQuery: SearchQuery): LearnQuery {
 		} else {
 			data = [];
 		}
+		const collectionSnapshot = await collectionReference.count().get();
 
-		const totalDocuments = searchResults?.out_of;
+		const totalDocuments = collectionSnapshot.data().count;
 		const totalFound = searchResults?.found;
 		const totalPages = Math.ceil(totalFound / pageSize);
 
